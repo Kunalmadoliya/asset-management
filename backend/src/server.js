@@ -5,7 +5,7 @@ async function start() {
   try {
     const port = process.env.PORT;
     const app = createApp()
-
+    
     app.get("/", (req, res) => {
       res.send("Hello, World!");
     });
