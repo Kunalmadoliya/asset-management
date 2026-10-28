@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useSession, useSignIn, useSocialSignIn } from "../hooks/useAuth.js";
 
@@ -12,7 +12,13 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState("");
 
-  // Redirect to dashboard if already authenticated
+  // Auto-redirect to dashboard if authenticated
+  useEffect(() => {
+    if (!sessionLoading && session?.user) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [session, sessionLoading, navigate]);
+
   if (!sessionLoading && session?.user) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -28,7 +34,7 @@ export function LoginPage() {
 
     try {
       await signInMutation.mutateAsync({ email, password });
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setFormError(err.message || "Failed to sign in. Please check your credentials.");
     }
@@ -49,6 +55,7 @@ export function LoginPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
+          <div className="brand-badge">AssetHub</div>
           <h2>Welcome back</h2>
           <p>Sign in to your account with email or social providers</p>
         </div>
@@ -105,7 +112,7 @@ export function LoginPage() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email address</label>
             <input
               id="email"
               type="email"
@@ -133,7 +140,7 @@ export function LoginPage() {
           </div>
 
           <button type="submit" className="submit-btn" disabled={isSubmitting}>
-            {signInMutation.isPending ? "Signing in..." : "Sign in"}
+            {signInMutation.isPending ? "Signing in..." : "Sign in to Dashboard"}
           </button>
         </form>
 

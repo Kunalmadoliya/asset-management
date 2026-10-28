@@ -40,8 +40,11 @@ export function useSignIn() {
 
       return res?.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+    onSuccess: async (data) => {
+      if (data?.user) {
+        queryClient.setQueryData(SESSION_QUERY_KEY, data);
+      }
+      await queryClient.refetchQueries({ queryKey: SESSION_QUERY_KEY });
     },
   });
 }
@@ -66,8 +69,11 @@ export function useSignUp() {
 
       return res?.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+    onSuccess: async (data) => {
+      if (data?.user) {
+        queryClient.setQueryData(SESSION_QUERY_KEY, data);
+      }
+      await queryClient.refetchQueries({ queryKey: SESSION_QUERY_KEY });
     },
   });
 }
@@ -86,11 +92,17 @@ export function useSocialSignIn() {
       const res = await authClient.signIn.social({
         provider,
         callbackURL,
+        newUserCallbackURL: callbackURL,
         errorCallbackURL,
       });
 
       if (res?.error) {
         throw new Error(res.error.message || `Failed to sign in with ${provider}`);
+      }
+
+      // If the client returns a URL rather than auto-redirecting
+      if (res?.data?.url) {
+        window.location.href = res.data.url;
       }
 
       return res?.data;

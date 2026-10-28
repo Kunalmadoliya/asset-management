@@ -3,27 +3,32 @@ import { useSession } from "../hooks/useAuth.js";
 
 /**
  * Route guard component that requires an active Better Auth session.
- * Redirects unauthenticated users to /login.
+ * Displays a loading spinner while validating session, and redirects
+ * unauthenticated users to /login.
  */
 export function ProtectedRoute({ children }) {
-  const { data: session, isLoading, error } = useSession();
+  const { data: session, isLoading, isFetching, error } = useSession();
 
-  if (isLoading) {
+  // If loading initially or refetching without user data yet, show spinner
+  if (isLoading || (isFetching && !session?.user)) {
     return (
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "70vh",
-        gap: "1rem"
-      }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "80vh",
+          gap: "1rem",
+        }}
+      >
         <div className="spinner" />
         <p style={{ color: "var(--text)" }}>Checking session...</p>
       </div>
     );
   }
 
+  // Not authenticated
   if (error || !session?.user) {
     return <Navigate to="/login" replace />;
   }

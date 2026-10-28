@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useSession, useSignUp, useSocialSignIn } from "../hooks/useAuth.js";
 
@@ -13,7 +13,13 @@ export function SignupPage() {
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState("");
 
-  // Redirect to dashboard if already authenticated
+  // Auto-redirect to dashboard if authenticated
+  useEffect(() => {
+    if (!sessionLoading && session?.user) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [session, sessionLoading, navigate]);
+
   if (!sessionLoading && session?.user) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -34,7 +40,7 @@ export function SignupPage() {
 
     try {
       await signUpMutation.mutateAsync({ name, email, password });
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setFormError(err.message || "Failed to create account. Please try again.");
     }
@@ -55,6 +61,7 @@ export function SignupPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
+          <div className="brand-badge">AssetHub</div>
           <h2>Create an account</h2>
           <p>Get started with email or your social accounts</p>
         </div>
@@ -124,7 +131,7 @@ export function SignupPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email address</label>
             <input
               id="email"
               type="email"
@@ -153,7 +160,7 @@ export function SignupPage() {
           </div>
 
           <button type="submit" className="submit-btn" disabled={isSubmitting}>
-            {signUpMutation.isPending ? "Creating account..." : "Sign up"}
+            {signUpMutation.isPending ? "Creating account..." : "Create Account & Go to Dashboard"}
           </button>
         </form>
 
